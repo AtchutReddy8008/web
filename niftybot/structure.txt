@@ -1,0 +1,31 @@
+niftybot/
+├── manage.py
+├── niftybot/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   ├── wsgi.py
+│   └── celery.py
+├── trading/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── views.py
+│   ├── forms.py
+│   ├── urls.py
+│   ├── tasks.py
+│   └── core/
+│       ├── __init__.py
+│       ├── bot_original.py
+│       └── auth.py
+├── templates/
+│   ├── base.html
+│   ├── registration/
+│   │   ├── login.html
+│   │   └── signup.html
+│   ├── trading/
+│   │   ├── dashboard.html
+│   │   └── connect_zerodha.html
+└── requirements.txt

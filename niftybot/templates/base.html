@@ -7,22 +7,48 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    {% block extra_head %}
+    <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+    {% endblock %}
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+          --green: #00ff9d;
+          --green-dark: #00c978;
+          --red: #ff4d4d;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #000;
+            color: #e0e0e0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
         }
 
-        /* === Enhanced Navbar === */
+        /* ================= BACKGROUND CHART ================= */
+        #chartContainer {
+          position: fixed;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -2;
+          pointer-events: none;
+        }
+
+        /* ================= NAVBAR (merged from first version + modern styling) ================= */
         .navbar {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 157, 0.15);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            z-index: 1000;
         }
 
         .navbar-brand {
             font-weight: 800;
             font-size: 1.55rem;
-            background: linear-gradient(90deg, #00f260, #0575e6, #ff00cc, #00f260);
+            background: linear-gradient(90deg, #00ff9d, #00c978, #40c0ff, #00ff9d);
             background-size: 300% 300%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -33,8 +59,8 @@
         }
 
         .navbar-brand:hover {
-            transform: scale(1.08);
-            filter: brightness(1.2) drop-shadow(0 0 12px rgba(0, 242, 96, 0.7));
+            transform: scale(1.06);
+            filter: brightness(1.15) drop-shadow(0 0 12px rgba(0, 255, 157, 0.7));
         }
 
         @keyframes gradientFlow {
@@ -52,146 +78,170 @@
         }
 
         .navbar-nav .nav-link:hover {
-            background: rgba(255,255,255,0.15);
+            background: rgba(0, 255, 157, 0.12);
+            color: var(--green) !important;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+            box-shadow: 0 4px 12px rgba(0, 255, 157, 0.2);
+            text-shadow: 0 0 10px rgba(0,255,157,0.5);
         }
 
         .navbar-nav .nav-link.active {
-            background: rgba(255,255,255,0.25);
+            background: rgba(0, 255, 157, 0.22);
+            color: var(--green) !important;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(0,255,157,0.6);
+        }
+
+        .dropdown-menu {
+            background: rgba(15, 15, 15, 0.95);
+            border: 1px solid rgba(0,255,157,0.25);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+        }
+
+        .dropdown-item {
+            color: #e0e0e0;
+            transition: all 0.25s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(0,255,157,0.18);
+            color: var(--green);
+        }
+
+        /* ================= TICKER ================= */
+        .ticker-container {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 2.4rem;
+          overflow: hidden;
+          z-index: 999;
+          pointer-events: none;
+          background: linear-gradient(to right, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.65) 30%, rgba(0,0,0,0.65) 70%, rgba(0,0,0,0.92) 100%);
+          border-top: 1px solid rgba(0,255,157,0.14);
+        }
+
+        .ticker-wrapper {
+          display: inline-flex;
+          white-space: nowrap;
+          animation: ticker 70s linear infinite;
+          will-change: transform;
+        }
+
+        .ticker-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.9rem;
+          padding: 0 2.8rem;
+          font-size: 1rem;
+          font-weight: 500;
+          color: #ccc;
+        }
+
+        .ticker-symbol { font-weight: 700; color: #fff; }
+        .ticker-price { color: #eee; }
+        .ticker-change.up { color: var(--green); font-weight: 600; }
+        .ticker-change.down { color: var(--red); font-weight: 600; }
+
+        @keyframes ticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
+        /* ================= MAIN CONTENT ================= */
+        .container.mt-5 {
+            position: relative;
+            z-index: 10;
+        }
+
+        .card, .sidebar {
+            background: rgba(15, 15, 15, 0.85);
+            border: 1px solid rgba(0,255,157,0.15);
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            color: #e0e0e0;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #0f2b1f 0%, #1a4d38 100%);
+            color: var(--green);
+            border-bottom: 1px solid rgba(0,255,157,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--green), var(--green-dark));
+            border: none;
+            color: #000;
             font-weight: 600;
         }
 
-        /* === Original card, button, status styles remain unchanged === */
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            border: none;
-        }
-        .card-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
-            padding: 1rem 1.5rem;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-            border: none;
-            transition: all 0.3s ease;
-        }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 0 25px rgba(0,255,157,0.6);
         }
+
         .btn-success {
             background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
-            border: none;
         }
+
         .btn-danger {
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            border: none;
         }
-        .status-running {
-            color: #27ae60;
-            font-weight: bold;
-            background-color: rgba(39, 174, 96, 0.1);
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-        }
-        .status-stopped {
-            color: #e74c3c;
-            font-weight: bold;
-            background-color: rgba(231, 76, 60, 0.1);
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-        }
-        .profit {
-            color: #27ae60;
-            font-weight: bold;
-        }
-        .loss {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        .sidebar {
-            background: white;
+
+        .status-running { color: var(--green); background: rgba(0,255,157,0.12); padding: 0.2rem 0.6rem; border-radius: 6px; }
+        .status-stopped { color: var(--red);   background: rgba(255,77,77,0.12);   padding: 0.2rem 0.6rem; border-radius: 6px; }
+        .profit { color: var(--green); font-weight: bold; }
+        .loss   { color: var(--red);   font-weight: bold; }
+
+        .alert {
             border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .sidebar-title {
-            color: #2c3e50;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #3498db;
+            backdrop-filter: blur(6px);
         }
 
-        /* === Enhanced Footer === */
+        /* ================= FOOTER ================= */
         .footer {
-            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-            color: #e0f7fa;
-            padding: 3rem 0 2.5rem;
-            margin-top: 4rem;
+            background: linear-gradient(135deg, #0a1a12 0%, #0f2b1f 50%, #1a4d38 100%);
+            color: #b0e6cf;
+            padding: 3.5rem 0 2.5rem;
+            margin-top: 5rem;
             position: relative;
-            overflow: hidden;
-        }
-
-        .footer::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 30% 20%, rgba(0, 242, 96, 0.08), transparent 60%);
-            pointer-events: none;
+            z-index: 5;
+            border-top: 1px solid rgba(0,255,157,0.15);
         }
 
         .footer h5 {
-            color: #4fc3f7;
+            color: var(--green);
             font-weight: 700;
             margin-bottom: 1.4rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .footer h5::after {
-            content: '';
-            position: absolute;
-            bottom: -8px; left: 0;
-            width: 60px; height: 3px;
-            background: linear-gradient(90deg, #00f260, #0575e6);
-            border-radius: 3px;
         }
 
         .footer a.text-light {
-            color: #b2ebf2 !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
+            color: #b0e6cf !important;
+            transition: all 0.3s;
         }
 
         .footer a.text-light:hover {
-            color: #00f260 !important;
-            transform: translateX(6px);
-            text-shadow: 0 0 10px rgba(0, 242, 96, 0.5);
+            color: var(--green) !important;
+            text-shadow: 0 0 10px rgba(0,255,157,0.5);
         }
 
-        /* === Clear & Prominent "Designed by" Section === */
         .designed-by {
-            font-size: 1.1rem;
-            font-weight: 500;
             margin-top: 3rem;
-            padding-top: 1.8rem;
-            border-top: 1px solid rgba(255,255,255,0.15);
             text-align: center;
-            color: #d1e8ff;
-            letter-spacing: 0.5px;
+            font-size: 1.1rem;
+            color: #88d4b0;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0,255,157,0.12);
         }
 
         .designed-by .heart {
             color: #ff6b6b;
             font-size: 1.3rem;
-            animation: heartbeat 2.5s infinite;
-            display: inline-block;
+            animation: heartbeat 2.2s infinite;
         }
 
         @keyframes heartbeat {
@@ -199,46 +249,43 @@
             50%      { transform: scale(1.3); }
         }
 
-        .designed-by span {
-            font-weight: 700;
-            background: linear-gradient(90deg, #00f260, #4fc3f7, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+          .ticker-wrapper, .navbar-brand { animation: none !important; }
         }
 
-        /* Keep original stat-card and hero styles */
-        .stat-card {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            text-align: center;
-            border-left: 4px solid #3498db;
-        }
-        .stat-card .value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .stat-card .label {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .hero-section {
-            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
-            color: white;
-            padding: 4rem 0;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-        }
+        {% block extra_css %}{% endblock %}
     </style>
-    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+
+    <!-- ================= TICKER (static demo – in real app replace with dynamic data) ================= -->
+    <div class="ticker-container">
+      <div class="ticker-wrapper">
+        {% for _ in "14"|make_list %}
+        <div class="ticker-item">
+          <span class="ticker-symbol">NIFTY</span>
+          <span class="ticker-price">25,175.40</span>
+          <span class="ticker-change up">+128.60 (+0.51%)</span>
+        </div>
+        <div class="ticker-item">
+          <span class="ticker-symbol">BANKNIFTY</span>
+          <span class="ticker-price">59,452.30</span>
+          <span class="ticker-change up">+201.40 (+0.34%)</span>
+        </div>
+        <div class="ticker-item">
+          <span class="ticker-symbol">FINNIFTY</span>
+          <span class="ticker-price">26,810.15</span>
+          <span class="ticker-change down">-42.85 (-0.16%)</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ================= BACKGROUND CHART ================= -->
+    <div id="chartContainer"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="fas fa-chart-line me-2"></i> Trade with Naman
@@ -251,49 +298,49 @@
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'broker' or request.resolver_match.url_name == 'connect_zerodha' %}active{% endif %}" href="{% url 'broker' %}">
-                                <i class="fas fa-plug"></i> Broker
+                                <i class="fas fa-plug me-1"></i> Broker
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'pnl_calendar' %}active{% endif %}" href="{% url 'pnl_calendar' %}">
-                                <i class="fas fa-calendar-alt"></i> PnL Calendar
+                                <i class="fas fa-calendar-alt me-1"></i> PnL Calendar
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'algorithms' %}active{% endif %}" href="{% url 'algorithms' %}">
-                                <i class="fas fa-robot"></i> Strategies
+                                <i class="fas fa-robot me-1"></i> Strategies
                             </a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user"></i> {{ user.username }}
+                                <i class="fas fa-user me-1"></i> {{ user.username }}
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                                <li><a class="dropdown-item" href="{% url 'broker' %}"><i class="fas fa-cog"></i> Settings</a></li>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'broker' %}"><i class="fas fa-cog me-2"></i> Settings</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'home' %}">
-                                <i class="fas fa-home"></i> Home
+                                <i class="fas fa-home me-1"></i> Home
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt"></i> Login
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'signup' %}">
-                                <i class="fas fa-user-plus"></i> Sign Up
+                                <i class="fas fa-user-plus me-1"></i> Sign Up
                             </a>
                         </li>
                     {% endif %}
@@ -302,7 +349,7 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container mt-5 pt-4">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
@@ -320,7 +367,7 @@
             <div class="row">
                 <div class="col-md-4">
                     <h5><i class="fas fa-chart-line"></i> NIFTY Trading Bot</h5>
-                    <p>Automated algorithmic trading platform for NIFTY options.</p>
+                    <p>Automated algorithmic trading platform for NIFTY options — powered by discipline, not emotion.</p>
                 </div>
                 <div class="col-md-4">
                     <h5>Quick Links</h5>
@@ -339,20 +386,69 @@
                 </div>
                 <div class="col-md-4">
                     <h5>Important Notice</h5>
-                    <p class="small">Trading involves risk. Past performance is not indicative of future results. Use at your own risk.</p>
+                    <p class="small">Trading involves substantial risk of loss. Past performance is not indicative of future results. Use at your own risk.</p>
                 </div>
             </div>
-            <hr class="bg-light opacity-25 mt-5">
-            <div class="designed-by text-center">
-                Designed with <span class="heart-pulse">❤️</span> by 
-                <span>Atchut Reddy</span> • © 2026 NIFTY Trading Bot
+            <div class="designed-by">
+                Designed with <span class="heart">❤️</span> by <strong>Atchut Reddy</strong> • © 2026 NIFTY Trading Bot
             </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
+    <!-- Background animated chart -->
+    <script>
+    (function () {
+      if (!window.CanvasJS) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const dpsCandles = [], dpsFastMA = [], dpsMediumMA = [];
+      let x = 0, lastClose = 100, closes = [];
+      const chart = new CanvasJS.Chart("chartContainer", {
+        animationEnabled: false,
+        backgroundColor: "transparent",
+        toolTip: { enabled: false },
+        axisX: { lineThickness:0, tickLength:0, labelFormatter:()=>"" },
+        axisY: { lineThickness:0, tickLength:0, labelFormatter:()=>"" },
+        data: [
+          { type:"candlestick", risingColor:"rgba(0,255,157,0.55)", fallingColor:"rgba(255,77,77,0.55)", dataPoints:dpsCandles },
+          { type:"line", lineColor:"#00ff9d", markerSize:0, dataPoints:dpsFastMA },
+          { type:"line", lineColor:"#40c0ff", markerSize:0, dataPoints:dpsMediumMA }
+        ]
+      });
+
+      const FAST = 7, MID = 17, WIN = 80;
+      function update() {
+        const open = lastClose;
+        const close = +(open + (Math.random() - 0.48) * 6).toFixed(2);
+        const high = Math.max(open, close) + Math.random() * 3;
+        const low = Math.min(open, close) - Math.random() * 3;
+        dpsCandles.push({ x, y:[open, high, low, close] });
+        closes.push(close);
+        lastClose = close;
+
+        if (closes.length >= FAST)
+          dpsFastMA.push({ x, y: closes.slice(-FAST).reduce((a,b)=>a+b)/FAST });
+        if (closes.length >= MID)
+          dpsMediumMA.push({ x, y: closes.slice(-MID).reduce((a,b)=>a+b)/MID });
+
+        x++;
+        if (dpsCandles.length > WIN) {
+          dpsCandles.shift(); closes.shift();
+          if (dpsFastMA.length) dpsFastMA.shift();
+          if (dpsMediumMA.length) dpsMediumMA.shift();
+        }
+        chart.render();
+      }
+
+      for (let i = 0; i < WIN; i++) update();
+      const interval = setInterval(update, 260);
+      window.addEventListener("beforeunload", () => clearInterval(interval));
+    })();
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
